@@ -1,0 +1,162 @@
+{
+  "name": "agentbasis",
+  "version": "0.1.0",
+  "description": "AgentBasis TypeScript SDK - Observability and monitoring for AI agents",
+  "author": "AgentBasis",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "agents",
+    "llm",
+    "observability",
+    "monitoring",
+    "tracing",
+    "openai",
+    "anthropic",
+    "gemini",
+    "langchain",
+    "vercel-ai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentbasis/agentbasis-ts-sdk"
+  },
+  "homepage": "https://agentbasis.co",
+  "bugs": {
+    "url": "https://github.com/agentbasis/agentbasis-ts-sdk/issues"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./llms/openai": {
+      "import": {
+        "types": "./dist/llms/openai.d.ts",
+        "default": "./dist/llms/openai.js"
+      },
+      "require": {
+        "types": "./dist/llms/openai.d.cts",
+        "default": "./dist/llms/openai.cjs"
+      }
+    },
+    "./llms/anthropic": {
+      "import": {
+        "types": "./dist/llms/anthropic.d.ts",
+        "default": "./dist/llms/anthropic.js"
+      },
+      "require": {
+        "types": "./dist/llms/anthropic.d.cts",
+        "default": "./dist/llms/anthropic.cjs"
+      }
+    },
+    "./llms/google-genai": {
+      "import": {
+        "types": "./dist/llms/google-genai.d.ts",
+        "default": "./dist/llms/google-genai.js"
+      },
+      "require": {
+        "types": "./dist/llms/google-genai.d.cts",
+        "default": "./dist/llms/google-genai.cjs"
+      }
+    },
+    "./frameworks/langchain": {
+      "import": {
+        "types": "./dist/frameworks/langchain.d.ts",
+        "default": "./dist/frameworks/langchain.js"
+      },
+      "require": {
+        "types": "./dist/frameworks/langchain.d.cts",
+        "default": "./dist/frameworks/langchain.cjs"
+      }
+    },
+    "./frameworks/vercel-ai": {
+      "import": {
+        "types": "./dist/frameworks/vercel-ai.d.ts",
+        "default": "./dist/frameworks/vercel-ai.js"
+      },
+      "require": {
+        "types": "./dist/frameworks/vercel-ai.d.cts",
+        "default": "./dist/frameworks/vercel-ai.cjs"
+      }
+    },
+    "./frameworks/mastra": {
+      "import": {
+        "types": "./dist/frameworks/mastra.d.ts",
+        "default": "./dist/frameworks/mastra.js"
+      },
+      "require": {
+        "types": "./dist/frameworks/mastra.d.cts",
+        "default": "./dist/frameworks/mastra.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "openai": ">=4.0.0",
+    "@anthropic-ai/sdk": ">=0.20.0",
+    "@google/generative-ai": ">=0.10.0",
+    "@langchain/core": ">=0.2.0",
+    "ai": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@google/generative-ai": {
+      "optional": true
+    },
+    "@langchain/core": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "tsup": "^8.0.1",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "prettier": "^3.2.4",
+    "openai": "^4.28.0",
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@google/generative-ai": "^0.10.0",
+    "@langchain/core": "^0.2.0",
+    "ai": "^3.0.0"
+  }
+}
