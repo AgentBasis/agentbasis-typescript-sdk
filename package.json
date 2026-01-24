@@ -15,7 +15,8 @@
     "anthropic",
     "gemini",
     "langchain",
-    "vercel-ai"
+    "vercel-ai-sdk",
+    "mastra"
   ],
   "repository": {
     "type": "git",
@@ -41,62 +42,62 @@
     },
     "./llms/openai": {
       "import": {
-        "types": "./dist/llms/openai.d.ts",
-        "default": "./dist/llms/openai.js"
+        "types": "./dist/llms/openai/index.d.ts",
+        "default": "./dist/llms/openai/index.js"
       },
       "require": {
-        "types": "./dist/llms/openai.d.cts",
-        "default": "./dist/llms/openai.cjs"
+        "types": "./dist/llms/openai/index.d.cts",
+        "default": "./dist/llms/openai/index.cjs"
       }
     },
     "./llms/anthropic": {
       "import": {
-        "types": "./dist/llms/anthropic.d.ts",
-        "default": "./dist/llms/anthropic.js"
+        "types": "./dist/llms/anthropic/index.d.ts",
+        "default": "./dist/llms/anthropic/index.js"
       },
       "require": {
-        "types": "./dist/llms/anthropic.d.cts",
-        "default": "./dist/llms/anthropic.cjs"
+        "types": "./dist/llms/anthropic/index.d.cts",
+        "default": "./dist/llms/anthropic/index.cjs"
       }
     },
     "./llms/google-genai": {
       "import": {
-        "types": "./dist/llms/google-genai.d.ts",
-        "default": "./dist/llms/google-genai.js"
+        "types": "./dist/llms/gemini/index.d.ts",
+        "default": "./dist/llms/gemini/index.js"
       },
       "require": {
-        "types": "./dist/llms/google-genai.d.cts",
-        "default": "./dist/llms/google-genai.cjs"
+        "types": "./dist/llms/gemini/index.d.cts",
+        "default": "./dist/llms/gemini/index.cjs"
       }
     },
     "./frameworks/langchain": {
       "import": {
-        "types": "./dist/frameworks/langchain.d.ts",
-        "default": "./dist/frameworks/langchain.js"
+        "types": "./dist/frameworks/langchain/index.d.ts",
+        "default": "./dist/frameworks/langchain/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/langchain.d.cts",
-        "default": "./dist/frameworks/langchain.cjs"
+        "types": "./dist/frameworks/langchain/index.d.cts",
+        "default": "./dist/frameworks/langchain/index.cjs"
       }
     },
     "./frameworks/vercel-ai": {
       "import": {
-        "types": "./dist/frameworks/vercel-ai.d.ts",
-        "default": "./dist/frameworks/vercel-ai.js"
+        "types": "./dist/frameworks/vercel-ai-sdk/index.d.ts",
+        "default": "./dist/frameworks/vercel-ai-sdk/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/vercel-ai.d.cts",
-        "default": "./dist/frameworks/vercel-ai.cjs"
+        "types": "./dist/frameworks/vercel-ai-sdk/index.d.cts",
+        "default": "./dist/frameworks/vercel-ai-sdk/index.cjs"
       }
     },
     "./frameworks/mastra": {
       "import": {
-        "types": "./dist/frameworks/mastra.d.ts",
-        "default": "./dist/frameworks/mastra.js"
+        "types": "./dist/frameworks/mastra/index.d.ts",
+        "default": "./dist/frameworks/mastra/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/mastra.d.cts",
-        "default": "./dist/frameworks/mastra.cjs"
+        "types": "./dist/frameworks/mastra/index.d.cts",
+        "default": "./dist/frameworks/mastra/index.cjs"
       }
     }
   },
