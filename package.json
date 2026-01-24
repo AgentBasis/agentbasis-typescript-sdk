@@ -11,6 +11,8 @@
     "observability",
     "monitoring",
     "tracing",
+    "opentelemetry",
+    "otel",
     "openai",
     "anthropic",
     "gemini",
@@ -119,6 +121,13 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/sdk-trace-base": "^1.21.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.48.0",
+    "@opentelemetry/resources": "^1.21.0",
+    "@opentelemetry/semantic-conventions": "^1.21.0"
   },
   "peerDependencies": {
     "openai": ">=4.0.0",
