@@ -2,11 +2,13 @@
  * Environment variable utilities for AgentBasis SDK
  */
 
+/** AgentBasis API base URL (hardcoded) */
+export const AGENTBASIS_API_URL = 'https://api.agentbasis.co';
+
 /** Environment variable names used by the SDK */
 export const ENV_VARS = {
   API_KEY: 'AGENTBASIS_API_KEY',
   AGENT_ID: 'AGENTBASIS_AGENT_ID',
-  BASE_URL: 'AGENTBASIS_BASE_URL',
   DEBUG: 'AGENTBASIS_DEBUG',
   INCLUDE_CONTENT: 'AGENTBASIS_INCLUDE_CONTENT',
 } as const;
@@ -69,14 +71,12 @@ export function isDebugMode(): boolean {
 export function getAgentBasisEnvVars(): {
   apiKey?: string;
   agentId?: string;
-  baseUrl?: string;
   debug: boolean;
   includeContent: boolean;
 } {
   return {
     apiKey: getEnvVar(ENV_VARS.API_KEY),
     agentId: getEnvVar(ENV_VARS.AGENT_ID),
-    baseUrl: getEnvVar(ENV_VARS.BASE_URL),
     debug: getEnvVarBool(ENV_VARS.DEBUG, false),
     includeContent: getEnvVarBool(ENV_VARS.INCLUDE_CONTENT, false),
   };
