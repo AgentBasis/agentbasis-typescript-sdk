@@ -15,7 +15,7 @@
     "anthropic",
     "gemini",
     "langchain",
-    "vercel-ai-sdk",
+    "vercel-ai",
     "mastra"
   ],
   "repository": {
@@ -60,7 +60,7 @@
         "default": "./dist/llms/anthropic/index.cjs"
       }
     },
-    "./llms/google-genai": {
+    "./llms/gemini": {
       "import": {
         "types": "./dist/llms/gemini/index.d.ts",
         "default": "./dist/llms/gemini/index.js"

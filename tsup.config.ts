@@ -3,12 +3,12 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
-    'llms/openai': 'src/llms/openai/index.ts',
-    'llms/anthropic': 'src/llms/anthropic/index.ts',
-    'llms/gemini': 'src/llms/gemini/index.ts',
-    'frameworks/langchain': 'src/frameworks/langchain/index.ts',
-    'frameworks/vercel-ai-sdk': 'src/frameworks/vercel-ai-sdk/index.ts',
-    'frameworks/mastra': 'src/frameworks/mastra/index.ts',
+    'llms/openai/index': 'src/llms/openai/index.ts',
+    'llms/anthropic/index': 'src/llms/anthropic/index.ts',
+    'llms/gemini/index': 'src/llms/gemini/index.ts',
+    'frameworks/langchain/index': 'src/frameworks/langchain/index.ts',
+    'frameworks/vercel-ai-sdk/index': 'src/frameworks/vercel-ai-sdk/index.ts',
+    'frameworks/mastra/index': 'src/frameworks/mastra/index.ts',
   },
   format: ['cjs', 'esm'],
   dts: true,
