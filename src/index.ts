@@ -1,7 +1,7 @@
 /**
  * AgentBasis TypeScript SDK
  *
- * Observability and monitoring for AI agents.
+ * Observability and monitoring for AI agents. Main entry point for the SDK.
  *
  * @example
  * ```typescript
