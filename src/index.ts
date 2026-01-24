@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { AgentBasis } from 'agentbasis';
+ * import { AgentBasis, withContext, trace } from 'agentbasis';
  *
  * // Initialize the SDK (reads from env vars)
  * AgentBasis.init();
@@ -14,6 +14,16 @@
  * AgentBasis.init({
  *   apiKey: 'your-api-key',
  *   agentId: 'your-agent-id',
+ * });
+ *
+ * // Track context across LLM calls
+ * await withContext({ userId: '123' }, async () => {
+ *   await openai.chat.completions.create({...});
+ * });
+ *
+ * // Trace custom functions
+ * const myFunction = trace('myFunction', async (input) => {
+ *   return result;
  * });
  *
  * // Flush before process exit
@@ -26,7 +36,14 @@
 
 // Core exports
 export { AgentBasis, init, flush, shutdown, isInitialized } from './core/client';
-export { withContext, trace, getCurrentContext } from './core/context';
+export {
+  withContext,
+  trace,
+  getCurrentContext,
+  getCurrentSpan,
+  addSpanAttributes,
+  recordError,
+} from './core/context';
 
 // Type exports
 export type {

@@ -90,6 +90,13 @@ export class AgentBasis {
   }
 
   /**
+   * Get the transport instance (internal use)
+   */
+  getTransport(): Transport {
+    return this.transport;
+  }
+
+  /**
    * Flush all pending telemetry data
    *
    * @param timeoutMillis - Maximum time to wait for flush (default: 30000ms)
