@@ -4,10 +4,10 @@
  * Main client class for initializing and managing the SDK.
  */
 
-import type { AgentBasisConfig, InitConfig, TelemetryEvent } from '../types';
+import type { AgentBasisConfig, InitConfig } from '../types';
 import { loadConfig } from './config';
 import { Transport } from './transport';
-import { debug, warn, error } from '../utils/logger';
+import { debug, warn } from '../utils/logger';
 
 /**
  * AgentBasis SDK singleton client
@@ -132,20 +132,17 @@ export class AgentBasis {
 
   /**
    * Track a telemetry event (internal use)
+   * @deprecated Use withContext() or trace() instead
    */
-  static track(event: Omit<TelemetryEvent, 'timestamp' | 'agentId'>): void {
+  static track(event: Record<string, unknown>): void {
     if (!AgentBasis.instance) {
       warn('AgentBasis not initialized. Event not tracked.');
       return;
     }
 
-    const fullEvent: TelemetryEvent = {
-      ...event,
-      timestamp: new Date().toISOString(),
-      agentId: AgentBasis.instance.config.agentId,
-    } as TelemetryEvent;
-
-    AgentBasis.instance.transport.enqueue(fullEvent);
+    // Note: Events are now tracked via OTEL spans
+    // This method is kept for potential future use
+    debug('track() called - consider using withContext() or trace() instead', event);
   }
 
   /**

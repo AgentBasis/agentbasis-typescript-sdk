@@ -219,7 +219,7 @@ export class Transport {
   /**
    * Force flush all pending spans
    */
-  async flush(timeoutMillis?: number): Promise<boolean> {
+  async flush(_timeoutMillis?: number): Promise<boolean> {
     try {
       await this.provider.forceFlush();
       debug('Telemetry flushed successfully');
