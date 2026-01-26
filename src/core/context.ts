@@ -51,6 +51,10 @@ export async function withContext<T>(
   traceContext: TraceContext,
   fn: () => T | Promise<T>
 ): Promise<T> {
+  if (!AgentBasis.isInitialized()) {
+    return fn();
+  }
+
   const client = AgentBasis.getInstance();
   const transport = client.getTransport();
   const tracer = transport.getTracer();
