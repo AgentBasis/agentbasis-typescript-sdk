@@ -163,11 +163,11 @@ export class AgentBasis {
     });
 
     process.on('SIGINT', () => {
-      void handleShutdown().then(() => process.exit(0));
+      void handleShutdown();
     });
 
     process.on('SIGTERM', () => {
-      void handleShutdown().then(() => process.exit(0));
+      void handleShutdown();
     });
   }
 }
