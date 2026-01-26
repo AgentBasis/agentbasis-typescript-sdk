@@ -74,22 +74,12 @@ export function createTracedAgent<T extends MastraAgentConfig>(config: T): T & {
   }
 
   try {
-    // Try to import Mastra dynamically
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mastra = require('@mastra/core');
-
-    // If Mastra has an Agent class, extend it
-    if (mastra.Agent) {
-      const originalAgent = new mastra.Agent(config);
-      return withAgentTracing(originalAgent) as T & { __traced: true };
-    }
-
-    // Otherwise, just add tracing metadata to config
-    debug('Mastra Agent class not found, returning config with tracing metadata');
+    // Return config with tracing metadata
+    // User is responsible for passing this to their Mastra agent
     return { ...config, __traced: true as const };
-  } catch {
-    // Mastra not installed, return config with tracing flag
-    debug('Mastra not installed, returning config with tracing metadata');
+  } catch (err) {
+    // Should not happen as we removed the dynamic require
+    debug('Error in createTracedAgent', err);
     return { ...config, __traced: true as const };
   }
 }
