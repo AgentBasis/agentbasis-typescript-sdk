@@ -69,6 +69,65 @@ interface StreamTextResult {
 }
 
 /**
+ * Token usage interface
+ */
+interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+/**
+ * Result with usage
+ */
+interface ResultWithUsage {
+  usage?: TokenUsage;
+  text?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Promise with usage
+ */
+interface PromiseWithUsage<T> extends Promise<T> {
+  usage?: Promise<TokenUsage>;
+}
+
+/**
+ * Stream result with usage
+ */
+interface StreamResultWithUsage {
+  textStream: AsyncIterable<string>;
+  usage?: Promise<TokenUsage>;
+  [key: string]: unknown;
+}
+
+/**
+ * Type guard for usage
+ */
+function hasUsage(obj: unknown): obj is { usage: TokenUsage } {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'usage' in obj &&
+    typeof (obj as { usage: unknown }).usage === 'object'
+  );
+}
+
+/**
+ * Type guard for stream usage
+ */
+function hasStreamUsage(obj: unknown): obj is { usage: Promise<TokenUsage> } {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'usage' in obj &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    typeof (obj as any).usage?.then === 'function'
+  );
+}
+
+/**
  * Wrap a Vercel AI SDK language model with AgentBasis tracing
  *
  * @param model - The language model to wrap
@@ -110,11 +169,12 @@ export function wrapLanguageModel<T extends LanguageModel>(model: T): T {
 
       try {
         const result = await originalDoGenerate(...args);
-        const durationMs = Date.now() - startTime;
-
-        // Extract usage if available
-        // @ts-expect-error - Accessing result structure
-        const usage = result?.usage;
+        
+        // Extract usage safely
+        let usage: TokenUsage | undefined;
+        if (hasUsage(result)) {
+          usage = result.usage;
+        }
 
         transport.endLLMSpan(span, {
           inputTokens: usage?.promptTokens,
@@ -154,12 +214,9 @@ export function wrapLanguageModel<T extends LanguageModel>(model: T): T {
       try {
         const result = await originalDoStream(...args);
 
-        // The stream result contains a stream property
-        // We'll track completion via the usage promise or stream end
-        // @ts-expect-error - Accessing result structure
-        if (result?.usage && typeof result.usage.then === 'function') {
-          // @ts-expect-error - Accessing result structure
-          result.usage.then((usage: { promptTokens?: number; completionTokens?: number; totalTokens?: number }) => {
+        // Check for usage promise safely
+        if (hasStreamUsage(result)) {
+          result.usage.then((usage: TokenUsage) => {
             transport.endLLMSpan(span, {
               inputTokens: usage?.promptTokens,
               outputTokens: usage?.completionTokens,
@@ -228,23 +285,19 @@ export async function trackAICall<T>(
 
   try {
     const result = await fn();
-    const durationMs = Date.now() - startTime;
 
-    // Try to extract usage from common result shapes
-    // @ts-expect-error - Accessing result structure
-    const usage = result?.usage;
-    if (usage) {
-      span.setAttribute('ai.input_tokens', usage.promptTokens || 0);
-      span.setAttribute('ai.output_tokens', usage.completionTokens || 0);
-      span.setAttribute('ai.total_tokens', usage.totalTokens || 0);
-    }
-
-    // @ts-expect-error - Accessing result structure
-    if (result?.text) {
+    // Safely check for usage and text
+    if (typeof result === 'object' && result !== null) {
+      if (hasUsage(result)) {
+        const usage = result.usage;
+        span.setAttribute('ai.input_tokens', usage.promptTokens || 0);
+        span.setAttribute('ai.output_tokens', usage.completionTokens || 0);
+        span.setAttribute('ai.total_tokens', usage.totalTokens || 0);
+      }
+      
       const config = AgentBasis.getConfig();
-      if (config?.includeContent) {
-        // @ts-expect-error - Accessing result structure
-        span.setAttribute('ai.response_text', result.text);
+      if (config?.includeContent && 'text' in result && typeof (result as { text: unknown }).text === 'string') {
+        span.setAttribute('ai.response_text', (result as { text: string }).text);
       }
     }
 
@@ -280,7 +333,7 @@ export async function trackAICall<T>(
  * }
  * ```
  */
-export function trackStreamingCall<T extends { textStream?: AsyncIterable<string>; usage?: Promise<unknown> }>(
+export function trackStreamingCall<T extends Partial<StreamResultWithUsage>>(
   name: string,
   streamResult: T
 ): T {
@@ -292,17 +345,13 @@ export function trackStreamingCall<T extends { textStream?: AsyncIterable<string
   const span = transport.startSpan(`vercel-ai.stream.${name}`);
 
   // Track via usage promise if available
-  if (streamResult.usage && typeof streamResult.usage.then === 'function') {
+  if (hasStreamUsage(streamResult)) {
     streamResult.usage
-      .then((usage: unknown) => {
-        // @ts-expect-error - Accessing usage structure
+      .then((usage) => {
         if (usage?.promptTokens !== undefined) {
-          // @ts-expect-error - Accessing usage structure
           span.setAttribute('ai.input_tokens', usage.promptTokens);
         }
-        // @ts-expect-error - Accessing usage structure
         if (usage?.completionTokens !== undefined) {
-          // @ts-expect-error - Accessing usage structure
           span.setAttribute('ai.output_tokens', usage.completionTokens);
         }
         span.end();
@@ -314,7 +363,7 @@ export function trackStreamingCall<T extends { textStream?: AsyncIterable<string
   }
 
   // If no usage promise, wrap the text stream
-  if (streamResult.textStream && !streamResult.usage) {
+  if (streamResult.textStream && !hasStreamUsage(streamResult)) {
     const originalStream = streamResult.textStream;
 
     const wrappedStream = (async function* (): AsyncGenerator<string, void, undefined> {
