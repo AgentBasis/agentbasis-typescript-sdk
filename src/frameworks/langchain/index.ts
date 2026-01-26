@@ -88,8 +88,12 @@ export class AgentBasisCallbackHandler {
   /** Map of run IDs to start times */
   private startTimes: Map<string, number> = new Map();
 
+  /** Whether the handler is enabled (SDK is initialized) */
+  private enabled: boolean;
+
   constructor() {
-    if (!AgentBasis.isInitialized()) {
+    this.enabled = AgentBasis.isInitialized();
+    if (!this.enabled) {
       warn('AgentBasis not initialized. Callbacks will be no-ops. Call AgentBasis.init() first.');
     }
   }
@@ -110,7 +114,7 @@ export class AgentBasisCallbackHandler {
     tags?: string[],
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
     const modelName = llm.name || llm.id?.join('/') || 'unknown';
@@ -145,7 +149,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -176,7 +180,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -210,7 +214,7 @@ export class AgentBasisCallbackHandler {
     tags?: string[],
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
     const modelName = llm.name || llm.id?.join('/') || 'unknown';
@@ -247,7 +251,7 @@ export class AgentBasisCallbackHandler {
     tags?: string[],
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
     const chainName = chain.name || chain.id?.join('/') || 'unknown';
@@ -275,7 +279,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -302,7 +306,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -329,7 +333,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
 
@@ -357,7 +361,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     // End any remaining action spans for this run
     for (const [key, span] of this.spans.entries()) {
@@ -385,7 +389,7 @@ export class AgentBasisCallbackHandler {
     tags?: string[],
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
     const toolName = tool.name || tool.id?.join('/') || 'unknown';
@@ -414,7 +418,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -441,7 +445,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -470,7 +474,7 @@ export class AgentBasisCallbackHandler {
     tags?: string[],
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const transport = AgentBasis.getInstance().getTransport();
     const retrieverName = retriever.name || retriever.id?.join('/') || 'unknown';
@@ -499,7 +503,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
@@ -523,7 +527,7 @@ export class AgentBasisCallbackHandler {
     parentRunId?: string,
     tags?: string[]
   ): Promise<void> {
-    if (!AgentBasis.isInitialized()) return;
+    if (!this.enabled) return;
 
     const span = this.spans.get(runId);
     if (!span) return;
