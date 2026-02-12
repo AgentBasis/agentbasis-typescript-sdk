@@ -347,6 +347,13 @@ function wrapGeminiStream(
     return streamResult;
   }
 
+  let ended = false;
+  const endStreamSpan = (opts: Parameters<Transport['endLLMSpan']>[1]): void => {
+    if (ended) return;
+    ended = true;
+    transport.endLLMSpan(span, opts);
+  };
+
   // Create wrapped stream
   const wrappedStream = (async function* (): AsyncGenerator<unknown, void, undefined> {
     let totalText = '';
@@ -361,7 +368,7 @@ function wrapGeminiStream(
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      transport.endLLMSpan(span, {
+      endStreamSpan({
         error,
         prompt,
         streamed: true,
@@ -377,7 +384,7 @@ function wrapGeminiStream(
         // @ts-expect-error - Accessing response structure
         const usageMetadata = response?.usageMetadata;
 
-        transport.endLLMSpan(span, {
+        endStreamSpan({
           inputTokens: usageMetadata?.promptTokenCount,
           outputTokens: usageMetadata?.candidatesTokenCount,
           totalTokens: usageMetadata?.totalTokenCount,
@@ -387,7 +394,7 @@ function wrapGeminiStream(
         });
       })
       .catch((err: Error) => {
-        transport.endLLMSpan(span, {
+        endStreamSpan({
           error: err,
           prompt,
           streamed: true,

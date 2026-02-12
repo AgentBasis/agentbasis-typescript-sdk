@@ -72,15 +72,15 @@ export function uninstrument(): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Anthropic = require('@anthropic-ai/sdk').default || require('@anthropic-ai/sdk');
+    // @ts-expect-error - Accessing Anthropic internals
+    const Messages = Anthropic.Messages || Anthropic.prototype?.messages?.constructor;
 
     // Restore original methods
     for (const [key, method] of originalMethods.entries()) {
       const [className, methodName] = key.split('.');
-      if (className === 'Messages') {
-        if (Anthropic.prototype.messages) {
-          // @ts-expect-error - Dynamic property access
-          Anthropic.prototype.messages[methodName] = method;
-        }
+      if (className === 'Messages' && Messages?.prototype) {
+        // @ts-expect-error - Dynamic property access
+        Messages.prototype[methodName] = method;
       }
     }
 
@@ -284,6 +284,12 @@ function wrapAnthropicStream(
   if (typeof stream.on === 'function') {
     let inputTokens = 0;
     let outputTokens = 0;
+    let ended = false;
+    const endStreamSpan = (opts: Parameters<Transport['endLLMSpan']>[1]): void => {
+      if (ended) return;
+      ended = true;
+      transport.endLLMSpan(span, opts);
+    };
 
     // @ts-expect-error - Accessing stream methods
     stream.on('message', (message: unknown) => {
@@ -294,7 +300,7 @@ function wrapAnthropicStream(
         outputTokens = usage.output_tokens || outputTokens;
       }
 
-      transport.endLLMSpan(span, {
+      endStreamSpan({
         inputTokens,
         outputTokens,
         totalTokens: inputTokens + outputTokens,
@@ -304,9 +310,21 @@ function wrapAnthropicStream(
       });
     });
 
+    // If stream ends without a message payload, still close span.
+    // @ts-expect-error - Accessing stream methods
+    stream.on('end', () => {
+      endStreamSpan({
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        prompt: params.messages,
+        streamed: true,
+      });
+    });
+
     // @ts-expect-error - Accessing stream methods
     stream.on('error', (err: Error) => {
-      transport.endLLMSpan(span, {
+      endStreamSpan({
         error: err,
         prompt: params.messages,
         streamed: true,

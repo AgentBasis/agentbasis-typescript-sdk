@@ -74,13 +74,25 @@ export function uninstrument(): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const OpenAI = require('openai').default || require('openai');
+    // @ts-expect-error - Accessing OpenAI internals
+    const ChatCompletions = OpenAI.Chat?.Completions || OpenAI.prototype?.chat?.completions?.constructor;
+    // @ts-expect-error - Accessing OpenAI internals
+    const Completions = OpenAI.Completions || OpenAI.prototype?.completions?.constructor;
+    // @ts-expect-error - Accessing OpenAI internals
+    const Embeddings = OpenAI.Embeddings || OpenAI.prototype?.embeddings?.constructor;
 
     // Restore original methods
     for (const [key, method] of originalMethods.entries()) {
       const [className, methodName] = key.split('.');
-      if (className === 'ChatCompletions' && OpenAI.prototype.chat?.completions) {
+      if (className === 'ChatCompletions' && ChatCompletions?.prototype) {
         // @ts-expect-error - Dynamic property access
-        OpenAI.prototype.chat.completions[methodName] = method;
+        ChatCompletions.prototype[methodName] = method;
+      } else if (className === 'Completions' && Completions?.prototype) {
+        // @ts-expect-error - Dynamic property access
+        Completions.prototype[methodName] = method;
+      } else if (className === 'Embeddings' && Embeddings?.prototype) {
+        // @ts-expect-error - Dynamic property access
+        Embeddings.prototype[methodName] = method;
       }
     }
 
