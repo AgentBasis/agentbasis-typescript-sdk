@@ -5,7 +5,6 @@
 import { context, trace, SpanStatusCode, type Span, type Context } from '@opentelemetry/api';
 import type { TraceContext } from '../types';
 import { AgentBasis } from './client';
-import { debug } from '../utils/logger';
 
 /** Context key for storing AgentBasis trace context */
 const AGENTBASIS_CONTEXT_KEY = 'agentbasis.context';

@@ -23,6 +23,8 @@
  */
 
 import { AgentBasis } from '../../core/client';
+import type { Transport } from '../../core/transport';
+import type { Span } from '@opentelemetry/api';
 import { debug, warn } from '../../utils/logger';
 
 /** Track if Gemini has been instrumented */
@@ -76,7 +78,6 @@ export function uninstrument(): void {
     const GenerativeModel = genaiModule.GenerativeModel;
     if (GenerativeModel?.prototype) {
       for (const [key, method] of originalMethods.entries()) {
-        // @ts-expect-error - Dynamic property access
         GenerativeModel.prototype[key] = method;
       }
     }
@@ -116,8 +117,6 @@ function patchGenerativeModel(genaiModule: unknown): void {
 
       // Extract model name from instance
       const model = this.model || 'gemini-unknown';
-      const startTime = Date.now();
-
       const span = transport.startLLMSpan(
         `gemini.generateContent`,
         'gemini',
@@ -129,10 +128,7 @@ function patchGenerativeModel(genaiModule: unknown): void {
 
       try {
         const result = await originalGenerateContent.call(this, request, options);
-        const durationMs = Date.now() - startTime;
-
         // Extract usage metadata
-        // @ts-expect-error - Accessing Gemini response structure
         const usageMetadata = result.response?.usageMetadata;
 
         transport.endLLMSpan(span, {
@@ -219,10 +215,7 @@ function patchGenerativeModel(genaiModule: unknown): void {
           const client = AgentBasis.getInstance();
           const transport = client.getTransport();
 
-          // @ts-expect-error - Accessing chat internals
           const model = this.model || 'gemini-unknown';
-          const startTime = Date.now();
-
           const span = transport.startLLMSpan(
             `gemini.chat.sendMessage`,
             'gemini',
@@ -231,9 +224,6 @@ function patchGenerativeModel(genaiModule: unknown): void {
 
           try {
             const result = await originalSendMessage(request, options);
-            const durationMs = Date.now() - startTime;
-
-            // @ts-expect-error - Accessing Gemini response structure
             const usageMetadata = result.response?.usageMetadata;
 
             transport.endLLMSpan(span, {
@@ -268,7 +258,6 @@ function patchGenerativeModel(genaiModule: unknown): void {
             const client = AgentBasis.getInstance();
             const transport = client.getTransport();
 
-            // @ts-expect-error - Accessing chat internals
             const model = this.model || 'gemini-unknown';
 
             const span = transport.startLLMSpan(
@@ -311,8 +300,6 @@ function patchGenerativeModel(genaiModule: unknown): void {
       const transport = client.getTransport();
 
       const model = this.model || 'gemini-unknown';
-      const startTime = Date.now();
-
       const span = transport.startLLMSpan(
         `gemini.embedContent`,
         'gemini',
@@ -321,8 +308,6 @@ function patchGenerativeModel(genaiModule: unknown): void {
 
       try {
         const result = await originalEmbedContent.call(this, request, options);
-        const durationMs = Date.now() - startTime;
-
         transport.endLLMSpan(span, {
           prompt: request,
           response: { embedding_dimensions: Array.isArray(result?.embedding?.values) ? result.embedding.values.length : 0 },
@@ -348,10 +333,8 @@ function patchGenerativeModel(genaiModule: unknown): void {
  */
 function wrapGeminiStream(
   streamResult: unknown,
-  span: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T
-    ? T extends { startLLMSpan: (...args: unknown[]) => infer S } ? S : never
-    : never,
-  transport: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T ? T : never,
+  span: Span,
+  transport: Transport,
   prompt: unknown
 ): unknown {
   // Gemini returns { stream: AsyncIterable, response: Promise }
@@ -370,7 +353,6 @@ function wrapGeminiStream(
 
     try {
       for await (const chunk of originalStream) {
-        // @ts-expect-error - Accessing chunk structure
         const text = chunk.text?.();
         if (text) {
           totalText += text;

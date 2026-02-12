@@ -11,6 +11,11 @@ export default defineConfig({
     'frameworks/mastra/index': 'src/frameworks/mastra/index.ts',
   },
   format: ['cjs', 'esm'],
+  outExtension({ format }) {
+    return {
+      js: format === 'cjs' ? '.cjs' : '.js',
+    };
+  },
   dts: true,
   splitting: true,
   sourcemap: true,

@@ -380,7 +380,6 @@ export function trackStreamingCall<T extends Partial<StreamResultWithUsage>>(
       }
     })();
 
-    // @ts-expect-error - Replacing stream
     streamResult.textStream = wrappedStream;
   }
 

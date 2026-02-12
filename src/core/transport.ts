@@ -127,13 +127,13 @@ export class Transport {
   endLLMSpan(
     span: Span,
     options: {
-      inputTokens?: number;
-      outputTokens?: number;
-      totalTokens?: number;
+      inputTokens?: number | undefined;
+      outputTokens?: number | undefined;
+      totalTokens?: number | undefined;
       prompt?: unknown;
       response?: unknown;
-      streamed?: boolean;
-      error?: Error;
+      streamed?: boolean | undefined;
+      error?: Error | undefined;
     }
   ): void {
     if (options.inputTokens !== undefined) {

@@ -38,7 +38,7 @@
         "default": "./dist/index.js"
       },
       "require": {
-        "types": "./dist/index.d.cts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.cjs"
       }
     },
@@ -48,7 +48,7 @@
         "default": "./dist/llms/openai/index.js"
       },
       "require": {
-        "types": "./dist/llms/openai/index.d.cts",
+        "types": "./dist/llms/openai/index.d.ts",
         "default": "./dist/llms/openai/index.cjs"
       }
     },
@@ -58,7 +58,7 @@
         "default": "./dist/llms/anthropic/index.js"
       },
       "require": {
-        "types": "./dist/llms/anthropic/index.d.cts",
+        "types": "./dist/llms/anthropic/index.d.ts",
         "default": "./dist/llms/anthropic/index.cjs"
       }
     },
@@ -68,7 +68,7 @@
         "default": "./dist/llms/gemini/index.js"
       },
       "require": {
-        "types": "./dist/llms/gemini/index.d.cts",
+        "types": "./dist/llms/gemini/index.d.ts",
         "default": "./dist/llms/gemini/index.cjs"
       }
     },
@@ -78,7 +78,7 @@
         "default": "./dist/frameworks/langchain/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/langchain/index.d.cts",
+        "types": "./dist/frameworks/langchain/index.d.ts",
         "default": "./dist/frameworks/langchain/index.cjs"
       }
     },
@@ -88,7 +88,7 @@
         "default": "./dist/frameworks/vercel-ai-sdk/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/vercel-ai-sdk/index.d.cts",
+        "types": "./dist/frameworks/vercel-ai-sdk/index.d.ts",
         "default": "./dist/frameworks/vercel-ai-sdk/index.cjs"
       }
     },
@@ -98,7 +98,7 @@
         "default": "./dist/frameworks/mastra/index.js"
       },
       "require": {
-        "types": "./dist/frameworks/mastra/index.d.cts",
+        "types": "./dist/frameworks/mastra/index.d.ts",
         "default": "./dist/frameworks/mastra/index.cjs"
       }
     }

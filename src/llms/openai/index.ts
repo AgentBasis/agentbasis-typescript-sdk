@@ -22,7 +22,8 @@
  */
 
 import { AgentBasis } from '../../core/client';
-import { LLM_ATTRIBUTES } from '../../core/transport';
+import type { Transport } from '../../core/transport';
+import type { Span } from '@opentelemetry/api';
 import { debug, warn } from '../../utils/logger';
 
 /** Track if OpenAI has been instrumented */
@@ -121,8 +122,6 @@ function patchChatCompletions(OpenAI: unknown): void {
 
     const model = params.model || 'unknown';
     const isStreaming = params.stream === true;
-    const startTime = Date.now();
-
     const span = transport.startLLMSpan(
       `openai.chat.completions.create`,
       'openai',
@@ -133,15 +132,12 @@ function patchChatCompletions(OpenAI: unknown): void {
       // Call original method
       const result = await originalCreate.call(this, params, options);
 
-      const durationMs = Date.now() - startTime;
-
       if (isStreaming) {
         // For streaming, wrap the async iterator
-        return wrapStreamingResponse(result, span, transport, params, durationMs);
+        return wrapStreamingResponse(result, span, transport, params);
       }
 
       // Non-streaming response
-      // @ts-expect-error - Accessing OpenAI response structure
       const usage = result.usage;
 
       transport.endLLMSpan(span, {
@@ -171,12 +167,9 @@ function patchChatCompletions(OpenAI: unknown): void {
  */
 async function* wrapStreamingResponse(
   stream: AsyncIterable<unknown>,
-  span: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T
-    ? T extends { startLLMSpan: (...args: unknown[]) => infer S } ? S : never
-    : never,
-  transport: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T ? T : never,
-  params: { messages: Array<{ role: string; content: string }> },
-  startDurationMs: number
+  span: Span,
+  transport: Transport,
+  params: { messages: Array<{ role: string; content: string }> }
 ): AsyncGenerator<unknown, void, undefined> {
   let totalContent = '';
   let finishReason: string | null = null;
@@ -254,8 +247,6 @@ function patchCompletions(OpenAI: unknown): void {
     const transport = client.getTransport();
 
     const model = params.model || 'unknown';
-    const startTime = Date.now();
-
     const span = transport.startLLMSpan(
       `openai.completions.create`,
       'openai',
@@ -264,9 +255,6 @@ function patchCompletions(OpenAI: unknown): void {
 
     try {
       const result = await originalCreate.call(this, params, options);
-      const durationMs = Date.now() - startTime;
-
-      // @ts-expect-error - Accessing OpenAI response structure
       const usage = result.usage;
 
       transport.endLLMSpan(span, {
@@ -319,8 +307,6 @@ function patchEmbeddings(OpenAI: unknown): void {
     const transport = client.getTransport();
 
     const model = params.model || 'unknown';
-    const startTime = Date.now();
-
     const span = transport.startLLMSpan(
       `openai.embeddings.create`,
       'openai',
@@ -329,9 +315,6 @@ function patchEmbeddings(OpenAI: unknown): void {
 
     try {
       const result = await originalCreate.call(this, params, options);
-      const durationMs = Date.now() - startTime;
-
-      // @ts-expect-error - Accessing OpenAI response structure
       const usage = result.usage;
 
       transport.endLLMSpan(span, {

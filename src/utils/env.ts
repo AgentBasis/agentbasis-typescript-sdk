@@ -69,8 +69,8 @@ export function isDebugMode(): boolean {
  * Get all AgentBasis environment variables
  */
 export function getAgentBasisEnvVars(): {
-  apiKey?: string;
-  agentId?: string;
+  apiKey: string | undefined;
+  agentId: string | undefined;
   debug: boolean;
   includeContent: boolean;
 } {

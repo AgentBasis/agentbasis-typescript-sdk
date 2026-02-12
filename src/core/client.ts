@@ -17,12 +17,10 @@ export class AgentBasis {
 
   private config: AgentBasisConfig;
   private transport: Transport;
-  private initialized = false;
 
   private constructor(config: AgentBasisConfig) {
     this.config = config;
     this.transport = new Transport(config);
-    this.initialized = true;
 
     // Start auto-flush
     this.transport.startAutoFlush();

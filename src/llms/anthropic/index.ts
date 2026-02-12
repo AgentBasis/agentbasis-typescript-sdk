@@ -22,6 +22,8 @@
  */
 
 import { AgentBasis } from '../../core/client';
+import type { Transport } from '../../core/transport';
+import type { Span } from '@opentelemetry/api';
 import { debug, warn } from '../../utils/logger';
 
 /** Track if Anthropic has been instrumented */
@@ -75,7 +77,6 @@ export function uninstrument(): void {
     for (const [key, method] of originalMethods.entries()) {
       const [className, methodName] = key.split('.');
       if (className === 'Messages') {
-        // @ts-expect-error - Dynamic property access
         if (Anthropic.prototype.messages) {
           // @ts-expect-error - Dynamic property access
           Anthropic.prototype.messages[methodName] = method;
@@ -122,8 +123,6 @@ function patchMessages(Anthropic: unknown): void {
 
     const model = params.model || 'unknown';
     const isStreaming = params.stream === true;
-    const startTime = Date.now();
-
     const span = transport.startLLMSpan(
       `anthropic.messages.create`,
       'anthropic',
@@ -134,15 +133,12 @@ function patchMessages(Anthropic: unknown): void {
       // Call original method
       const result = await originalCreate.call(this, params, options);
 
-      const durationMs = Date.now() - startTime;
-
       if (isStreaming) {
         // For streaming, wrap the stream
         return wrapStreamingResponse(result, span, transport, params);
       }
 
       // Non-streaming response
-      // @ts-expect-error - Accessing Anthropic response structure
       const usage = result.usage;
 
       transport.endLLMSpan(span, {
@@ -215,10 +211,8 @@ function patchMessages(Anthropic: unknown): void {
  */
 async function* wrapStreamingResponse(
   stream: AsyncIterable<unknown>,
-  span: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T
-    ? T extends { startLLMSpan: (...args: unknown[]) => infer S } ? S : never
-    : never,
-  transport: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T ? T : never,
+  span: Span,
+  transport: Transport,
   params: { messages: Array<{ role: string; content: string | Array<unknown> }> }
 ): AsyncGenerator<unknown, void, undefined> {
   let totalContent = '';
@@ -279,10 +273,8 @@ async function* wrapStreamingResponse(
  */
 function wrapAnthropicStream(
   stream: unknown,
-  span: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T
-    ? T extends { startLLMSpan: (...args: unknown[]) => infer S } ? S : never
-    : never,
-  transport: ReturnType<typeof AgentBasis.getInstance>['getTransport'] extends () => infer T ? T : never,
+  span: Span,
+  transport: Transport,
   params: { messages: Array<{ role: string; content: string | Array<unknown> }> }
 ): unknown {
   // The Anthropic SDK's stream() returns a MessageStream object
