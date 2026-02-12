@@ -17,11 +17,10 @@ export const ENV_VARS = {
  * Get an environment variable value
  */
 export function getEnvVar(name: string): string | undefined {
-  // Node.js environment
-  if (typeof process !== 'undefined' && process.env) {
-    return process.env[name];
+  if (typeof process === 'undefined') {
+    return undefined;
   }
-  return undefined;
+  return process.env[name];
 }
 
 /**

@@ -198,7 +198,7 @@ export class AgentBasis {
 }
 
 // Convenience function exports
-export const init = AgentBasis.init;
-export const flush = AgentBasis.flush;
-export const shutdown = AgentBasis.shutdown;
-export const isInitialized = AgentBasis.isInitialized;
+export const init = (config?: InitConfig): AgentBasis => AgentBasis.init(config);
+export const flush = (timeoutMillis?: number): Promise<boolean> => AgentBasis.flush(timeoutMillis);
+export const shutdown = (): Promise<void> => AgentBasis.shutdown();
+export const isInitialized = (): boolean => AgentBasis.isInitialized();

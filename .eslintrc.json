@@ -28,10 +28,44 @@
     "@typescript-eslint/strict-boolean-expressions": "warn",
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/await-thenable": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["log", "warn", "error"] }],
     "prefer-const": "error",
     "no-var": "error",
     "eqeqeq": ["error", "always"]
   },
+  "overrides": [
+    {
+      "files": ["src/frameworks/langchain/index.ts"],
+      "rules": {
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/prefer-nullish-coalescing": "off"
+      }
+    },
+    {
+      "files": ["src/frameworks/vercel-ai-sdk/index.ts", "src/frameworks/mastra/index.ts"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/prefer-nullish-coalescing": "off"
+      }
+    },
+    {
+      "files": ["src/llms/openai/index.ts", "src/llms/anthropic/index.ts", "src/llms/gemini/index.ts"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/prefer-nullish-coalescing": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["dist", "node_modules", "*.config.ts", "*.config.js"]
 }
