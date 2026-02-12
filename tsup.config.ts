@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup';
+import pkg from './package.json';
 
 export default defineConfig({
   entry: {
@@ -17,6 +18,9 @@ export default defineConfig({
     };
   },
   dts: true,
+  define: {
+    __AGENTBASIS_SDK_VERSION__: JSON.stringify(pkg.version),
+  },
   splitting: true,
   sourcemap: true,
   clean: true,

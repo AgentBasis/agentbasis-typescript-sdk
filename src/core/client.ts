@@ -7,13 +7,24 @@
 import type { AgentBasisConfig, InitConfig } from '../types';
 import { loadConfig } from './config';
 import { Transport } from './transport';
-import { debug, warn } from '../utils/logger';
+import { debug, setRuntimeDebugMode, warn } from '../utils/logger';
 
 /**
  * AgentBasis SDK singleton client
  */
 export class AgentBasis {
   private static instance: AgentBasis | null = null;
+  private static shutdownPromise: Promise<void> | null = null;
+  private static handlersRegistered = false;
+  private static readonly handleBeforeExit = (): void => {
+    void AgentBasis.shutdown();
+  };
+  private static readonly handleSigInt = (): void => {
+    void AgentBasis.shutdown();
+  };
+  private static readonly handleSigTerm = (): void => {
+    void AgentBasis.shutdown();
+  };
 
   private config: AgentBasisConfig;
   private transport: Transport;
@@ -56,6 +67,7 @@ export class AgentBasis {
     }
 
     const resolvedConfig = loadConfig(config);
+    setRuntimeDebugMode(resolvedConfig.debug);
     AgentBasis.instance = new AgentBasis(resolvedConfig);
 
     return AgentBasis.instance;
@@ -116,16 +128,28 @@ export class AgentBasis {
    * Flushes all pending events and stops background tasks.
    */
   static async shutdown(): Promise<void> {
+    if (AgentBasis.shutdownPromise) {
+      return AgentBasis.shutdownPromise;
+    }
+
     if (!AgentBasis.instance) {
       return;
     }
 
-    debug('Shutting down AgentBasis SDK...');
+    AgentBasis.shutdownPromise = (async () => {
+      debug('Shutting down AgentBasis SDK...');
+      AgentBasis.removeShutdownHandlers();
+      await AgentBasis.instance?.transport.shutdown();
+      AgentBasis.instance = null;
+      setRuntimeDebugMode(undefined);
+      debug('AgentBasis SDK shutdown complete');
+    })();
 
-    await AgentBasis.instance.transport.shutdown();
-    AgentBasis.instance = null;
-
-    debug('AgentBasis SDK shutdown complete');
+    try {
+      await AgentBasis.shutdownPromise;
+    } finally {
+      AgentBasis.shutdownPromise = null;
+    }
   }
 
   /**
@@ -151,22 +175,25 @@ export class AgentBasis {
       return;
     }
 
-    const handleShutdown = async (): Promise<void> => {
-      await AgentBasis.shutdown();
-    };
+    if (AgentBasis.handlersRegistered) {
+      return;
+    }
 
-    // Handle various exit signals
-    process.on('beforeExit', () => {
-      void handleShutdown();
-    });
+    process.once('beforeExit', AgentBasis.handleBeforeExit);
+    process.once('SIGINT', AgentBasis.handleSigInt);
+    process.once('SIGTERM', AgentBasis.handleSigTerm);
+    AgentBasis.handlersRegistered = true;
+  }
 
-    process.on('SIGINT', () => {
-      void handleShutdown();
-    });
+  private static removeShutdownHandlers(): void {
+    if (typeof process === 'undefined' || !AgentBasis.handlersRegistered) {
+      return;
+    }
 
-    process.on('SIGTERM', () => {
-      void handleShutdown();
-    });
+    process.off('beforeExit', AgentBasis.handleBeforeExit);
+    process.off('SIGINT', AgentBasis.handleSigInt);
+    process.off('SIGTERM', AgentBasis.handleSigTerm);
+    AgentBasis.handlersRegistered = false;
   }
 }
 
