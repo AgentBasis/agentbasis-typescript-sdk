@@ -28,7 +28,7 @@
 
 import { AgentBasis } from '../../core/client';
 import { debug, warn } from '../../utils/logger';
-import type { Span } from '@opentelemetry/api';
+import { SpanStatusCode } from '@opentelemetry/api';
 
 /**
  * Mastra Agent interface (simplified)
@@ -208,12 +208,17 @@ export async function trackAgentExecution<T>(
       span.setAttribute('mastra.output', JSON.stringify(result));
     }
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
     debug(`Agent ${agentName} completed in ${durationMs}ms`);
 
     return result;
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.setAttribute('mastra.error', error.message);
     span.end();
@@ -268,10 +273,15 @@ export async function trackToolExecution<T>(
       span.setAttribute('mastra.tool_output', JSON.stringify(result));
     }
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
     return result;
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
     throw err;
@@ -311,11 +321,16 @@ export async function trackWorkflowStep<T>(
     const durationMs = Date.now() - startTime;
 
     span.setAttribute('mastra.duration_ms', durationMs);
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
 
     return result;
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
     throw err;

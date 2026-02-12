@@ -30,8 +30,8 @@
  */
 
 import { AgentBasis } from '../../core/client';
-import { debug, warn } from '../../utils/logger';
-import type { Span } from '@opentelemetry/api';
+import { warn } from '../../utils/logger';
+import { SpanStatusCode } from '@opentelemetry/api';
 
 /**
  * Vercel AI SDK LanguageModel interface (simplified)
@@ -159,7 +159,6 @@ export function wrapLanguageModel<T extends LanguageModel>(model: T): T {
       ...args: unknown[]
     ): Promise<unknown> {
       const transport = AgentBasis.getInstance().getTransport();
-      const startTime = Date.now();
 
       const span = transport.startLLMSpan(
         `vercel-ai.generate`,
@@ -279,7 +278,6 @@ export async function trackAICall<T>(
   }
 
   const transport = AgentBasis.getInstance().getTransport();
-  const startTime = Date.now();
 
   const span = transport.startSpan(`vercel-ai.${name}`);
 
@@ -301,10 +299,15 @@ export async function trackAICall<T>(
       }
     }
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
     return result;
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
     throw err;
@@ -343,6 +346,21 @@ export function trackStreamingCall<T extends Partial<StreamResultWithUsage>>(
 
   const transport = AgentBasis.getInstance().getTransport();
   const span = transport.startSpan(`vercel-ai.stream.${name}`);
+  let ended = false;
+  const endStreamSpan = (options?: { error?: Error }): void => {
+    if (ended) return;
+    ended = true;
+    if (options?.error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: options.error.message,
+      });
+      span.recordException(options.error);
+    } else {
+      span.setStatus({ code: SpanStatusCode.OK });
+    }
+    span.end();
+  };
 
   // Track via usage promise if available
   if (hasStreamUsage(streamResult)) {
@@ -354,11 +372,10 @@ export function trackStreamingCall<T extends Partial<StreamResultWithUsage>>(
         if (usage?.completionTokens !== undefined) {
           span.setAttribute('ai.output_tokens', usage.completionTokens);
         }
-        span.end();
+        endStreamSpan();
       })
       .catch((err: Error) => {
-        span.recordException(err);
-        span.end();
+        endStreamSpan({ error: err });
       });
   }
 
@@ -371,11 +388,10 @@ export function trackStreamingCall<T extends Partial<StreamResultWithUsage>>(
         for await (const chunk of originalStream) {
           yield chunk;
         }
-        span.end();
+        endStreamSpan();
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        span.recordException(error);
-        span.end();
+        endStreamSpan({ error });
         throw err;
       }
     })();

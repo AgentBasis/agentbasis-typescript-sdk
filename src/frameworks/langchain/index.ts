@@ -24,7 +24,7 @@
 
 import { AgentBasis } from '../../core/client';
 import { debug, warn } from '../../utils/logger';
-import type { Span } from '@opentelemetry/api';
+import { SpanStatusCode, type Span } from '@opentelemetry/api';
 
 /** Serialized representation from LangChain */
 interface Serialized {
@@ -236,6 +236,30 @@ export class AgentBasisCallbackHandler {
     debug(`Chat model started: ${modelName}`, { runId });
   }
 
+  /**
+   * Called when chat model finishes
+   */
+  async handleChatModelEnd(
+    output: LLMResult,
+    runId: string,
+    parentRunId?: string,
+    tags?: string[]
+  ): Promise<void> {
+    await this.handleLLMEnd(output, runId, parentRunId, tags);
+  }
+
+  /**
+   * Called when chat model errors
+   */
+  async handleChatModelError(
+    error: Error,
+    runId: string,
+    parentRunId?: string,
+    tags?: string[]
+  ): Promise<void> {
+    await this.handleLLMError(error, runId, parentRunId, tags);
+  }
+
   // =========================================================================
   // Chain Callbacks
   // =========================================================================
@@ -289,6 +313,7 @@ export class AgentBasisCallbackHandler {
       span.setAttribute('langchain.outputs', JSON.stringify(outputs));
     }
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
 
     this.spans.delete(runId);
@@ -311,6 +336,10 @@ export class AgentBasisCallbackHandler {
     const span = this.spans.get(runId);
     if (!span) return;
 
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
 
@@ -366,12 +395,39 @@ export class AgentBasisCallbackHandler {
     // End any remaining action spans for this run
     for (const [key, span] of this.spans.entries()) {
       if (key.startsWith(`${runId}_action_`)) {
+        span.setStatus({ code: SpanStatusCode.OK });
         span.end();
         this.spans.delete(key);
       }
     }
 
     debug('Agent ended', { runId });
+  }
+
+  /**
+   * Called when agent errors
+   */
+  async handleAgentError(
+    error: Error,
+    runId: string,
+    parentRunId?: string,
+    tags?: string[]
+  ): Promise<void> {
+    if (!this.enabled) return;
+
+    for (const [key, span] of this.spans.entries()) {
+      if (key.startsWith(`${runId}_action_`)) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        span.recordException(error);
+        span.end();
+        this.spans.delete(key);
+      }
+    }
+
+    debug('Agent error', { runId, error: error.message });
   }
 
   // =========================================================================
@@ -428,6 +484,7 @@ export class AgentBasisCallbackHandler {
       span.setAttribute('langchain.tool_output', output);
     }
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
 
     this.spans.delete(runId);
@@ -450,6 +507,10 @@ export class AgentBasisCallbackHandler {
     const span = this.spans.get(runId);
     if (!span) return;
 
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
 
@@ -510,6 +571,7 @@ export class AgentBasisCallbackHandler {
 
     span.setAttribute('langchain.document_count', documents.length);
 
+    span.setStatus({ code: SpanStatusCode.OK });
     span.end();
 
     this.spans.delete(runId);
@@ -532,6 +594,10 @@ export class AgentBasisCallbackHandler {
     const span = this.spans.get(runId);
     if (!span) return;
 
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error.message,
+    });
     span.recordException(error);
     span.end();
 
