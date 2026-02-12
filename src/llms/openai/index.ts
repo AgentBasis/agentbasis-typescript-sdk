@@ -74,11 +74,8 @@ export function uninstrument(): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const OpenAI = require('openai').default || require('openai');
-    // @ts-expect-error - Accessing OpenAI internals
     const ChatCompletions = OpenAI.Chat?.Completions || OpenAI.prototype?.chat?.completions?.constructor;
-    // @ts-expect-error - Accessing OpenAI internals
     const Completions = OpenAI.Completions || OpenAI.prototype?.completions?.constructor;
-    // @ts-expect-error - Accessing OpenAI internals
     const Embeddings = OpenAI.Embeddings || OpenAI.prototype?.embeddings?.constructor;
 
     // Restore original methods

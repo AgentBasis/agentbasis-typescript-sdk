@@ -72,7 +72,6 @@ export function uninstrument(): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Anthropic = require('@anthropic-ai/sdk').default || require('@anthropic-ai/sdk');
-    // @ts-expect-error - Accessing Anthropic internals
     const Messages = Anthropic.Messages || Anthropic.prototype?.messages?.constructor;
 
     // Restore original methods
